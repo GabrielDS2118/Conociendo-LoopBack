@@ -4,18 +4,12 @@ import {
   Filter,
   FilterExcludingWhere,
   repository,
-  Where,
+  Where
 } from '@loopback/repository';
 import {
-  post,
-  param,
-  get,
-  getModelSchemaRef,
-  patch,
-  put,
-  del,
-  requestBody,
-  response,
+  del, get,
+  getModelSchemaRef, param, patch, post, put, requestBody,
+  response
 } from '@loopback/rest';
 import {Persona} from '../models';
 import {PersonaRepository} from '../repositories';
@@ -27,7 +21,7 @@ export class PersonaController {
   ) {}
 
   @post('/personas')
-  @response(200, {
+  @response(201, {
     description: 'Persona model instance',
     content: {'application/json': {schema: getModelSchemaRef(Persona)}},
   })

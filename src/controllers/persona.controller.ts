@@ -9,10 +9,11 @@ import {
 } from '@loopback/repository';
 import {
   del, get,
-  getModelSchemaRef, param, patch, post, put, requestBody,
+  getModelSchemaRef, HttpErrors, param, patch, post, put, requestBody,
   response
 } from '@loopback/rest';
-import {Persona} from '../models';
+import { Llaves } from '../config/llaves';
+import {Credenciales, Persona} from '../models';
 import {PersonaRepository} from '../repositories';
 import { AutenticacionService } from '../services';
 
@@ -26,6 +27,33 @@ export class PersonaController {
     @service(AutenticacionService)
     public autenticacionService: AutenticacionService
   ) {}
+
+  @post('/identificarPersona')
+  @response(201, {
+    description: 'Identificación de usuarios'
+  })
+  async identityPerson(
+    @requestBody() credentials: Credenciales
+  ) {
+        let p = await this.autenticacionService.identifyPerson(credentials.usuario, credentials.clave);
+
+        if(p) {
+          let token = this.autenticacionService.generateToken(p);
+          return {
+            datos: {
+              nombre: p.nombres,
+              correo: p.correo,
+              id: p.id
+            },
+
+            token: token
+          }
+        }
+
+        else {
+          throw new HttpErrors[401]("Datos invalidos");
+        }
+  }
 
   @post('/personas')
   @response(201, {
@@ -57,7 +85,7 @@ export class PersonaController {
     let asunto = 'Registrandose en la plataforma';
     let message = `Hola ${persona.nombres}, su usuario es ${persona.correo} y su clave es ${clave}`;
 
-    fetch(`http://127.0.0.1:5000/enviar-email?destino=${sendTo}&subject=${asunto}&content=${message}`)
+    fetch(`${Llaves.urlNotificationServer}/enviar-email?destino=${sendTo}&subject=${asunto}&content=${message}`)
       .then( (data: any) => {
           console.log(data);
       })
